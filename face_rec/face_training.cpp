@@ -11,7 +11,7 @@ namespace nl {
             const string LBPH_FILENAME = "lbph_model";
 
             FaceTraining::FaceTraining(const string &csv_filename, const string &target_dir) {
-                read_csv(csv_filename, this->original_images, this->original_labels);
+                this->paths = read_csv(csv_filename, this->original_images, this->original_labels);
                 this->target_dir = target_dir;
             }
 
@@ -19,16 +19,23 @@ namespace nl {
                 this->target_dir = target_dir;
             }
 
-            void FaceTraining::detect_face_and_normalize_input(int target_width, int target_height, int min_face_width, int min_face_height) {
+            bool FaceTraining::detect_face_and_normalize_input(int target_width, int target_height, int min_face_width, int min_face_height) {
+                bool detectedAllFaces = true;
                 CascadeClassifier classifier = this->get_face_recognition().face_detection_classifier();
                 for (size_t i = 0; i < this->original_images.size(); i++) {
-                    FaceRecognition::detect_face_and_normalize_input(
+                    unsigned long facesDetected = FaceRecognition::detect_face_and_normalize_input(
                             this->original_images[i], this->original_labels[i],
                             this->normalized_images, this->normalized_labels,
                             target_width, target_height, classifier,
                             min_face_width, min_face_height
                     );
+                    if (facesDetected == 0) {
+                        namedWindow(paths[i], WINDOW_NORMAL);
+                        imshow(paths[i], this->original_images[i]);
+                        detectedAllFaces = false;
+                    }
                 }
+                return detectedAllFaces;
             }
 
             void FaceTraining::normalize_input(int target_width, int target_height) {
@@ -64,9 +71,10 @@ namespace nl {
             }
 
 
-            void FaceTraining::read_csv(const string &csv_filename, vector<Mat> &images,
+            vector<string> FaceTraining::read_csv(const string &csv_filename, vector<Mat> &images,
                                         vector<int> &labels,
                                         char separator) {
+                vector<string> paths;
                 std::ifstream file(csv_filename.c_str(), ifstream::in);
                 if (!file) {
                     string error_message = "No valid input file was given, please check the given filename.";
@@ -80,8 +88,10 @@ namespace nl {
                     if (!path.empty() && !classlabel.empty()) {
                         images.push_back(imread(path, CV_LOAD_IMAGE_GRAYSCALE));
                         labels.push_back(atoi(classlabel.c_str()));
+                        paths.push_back(path);
                     }
                 }
+                return paths;
             }
 
             vector<Mat> &FaceTraining::get_original_images() {

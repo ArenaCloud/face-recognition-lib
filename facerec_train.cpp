@@ -1,4 +1,5 @@
 #include "face_rec/face_training.h"
+#include <opencv2/highgui/highgui.hpp>
 
 using namespace nl;
 using namespace sping;
@@ -29,10 +30,21 @@ int main(int argc, const char *argv[]) {
 
     FaceTraining faceTraining(csv_filename, target_dir);
     // load cascade
-    faceTraining.get_face_recognition().load_cascade(face_cascade_filename);
+    if (!faceTraining.get_face_recognition().load_cascade(face_cascade_filename)) {
+        cout << "Could not load cascade " << face_cascade_filename << endl;
+        return 1;
+    }
+    bool detectedAllFaces = faceTraining.detect_face_and_normalize_input(target_width, target_height, min_face_width, min_face_height);
+    if (!detectedAllFaces) {
+        cout << "Not all faces detected, check shown input images" << endl;
+        cout << "Press any key to continue" << endl;
+        waitKey(0);
+    }
 
-    faceTraining.detect_face_and_normalize_input(target_width, target_height, min_face_width, min_face_height);
+    cout << "Training..." << endl;
     faceTraining.train();
+
+    cout << "Saving to " << target_dir << endl;
     faceTraining.save();
 
     return 0;

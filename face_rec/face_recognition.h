@@ -32,6 +32,9 @@ namespace nl {
             public:
                 FaceRecognition() { }
 
+                static const map<OpenCVFaceRecognizer, string> OpenCVFaceRecognizerToString;
+                static const map<string, OpenCVFaceRecognizer> OpenCVFaceRecognizerStringToEnum;
+
                 /**
                  * Resizes src and puts the resized image in the dst vector.
                  */
@@ -42,7 +45,7 @@ namespace nl {
                 /**
                  * Detects a face/faces in src, extracts and resizes face and puts it in the dst vector
                  */
-                static void detect_face_and_normalize_input(Mat &src, int src_label,
+                static unsigned long detect_face_and_normalize_input(Mat &src, int src_label,
                                                             vector<Mat> &dst, vector<int> &dst_labels,
                                                             int target_width, int target_height,
                                                             CascadeClassifier &cascade,
@@ -56,7 +59,7 @@ namespace nl {
                 /**
                  * Initializes CascadeClassifier with the given file
                  */
-                void load_cascade(const string& file_name);
+                bool load_cascade(const string& file_name);
 
                 /**
                  * Trains the recognizer with given images and labels.
@@ -86,11 +89,21 @@ namespace nl {
                 void save(OpenCVFaceRecognizer recognizer, const string& file_name);
 
                 /**
-                 * Detects faces in src, returns label and confidence of largest detected face
-                 * Draws rectangles over detected faces with label and confidence
+                  * Detects faces in src, returns label and confidence of largest detected face
+                  * Draws rectangles over detected faces with label and confidence
+                  *
+                  * Returns label and confidence given a face and a recognizer
+                  * Note that the input image must be of the correct dimensions if using FISHERFACES or EIGENFACES
+                  */
+                void predict(vector<OpenCVFaceRecognizer>& recognizers, Mat& src, vector<int>& labels, vector<double>& confidences,
+                             int target_width, int target_height,
+                             int min_face_width, int min_face_height);
+
+                /**
+                 * Wraps recognizer, label and confidence each in a vector and passes it into
+                 * predict(vector<OpenCVFaceRecognizer>& recognizers, Mat& src, vector<int>& labels, vector<double>& confidences ...
                  *
-                 * Returns label and confidence given a face and a recognizer
-                 * Note that the input image must be of the correct dimensions if using FISHERFACES or EIGENFACES
+                 * Thus using the other method will be more performant.
                  */
                 void predict(OpenCVFaceRecognizer recognizer, Mat& src, int& label, double& confidence,
                              int target_width, int target_height,

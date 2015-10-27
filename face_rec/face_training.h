@@ -28,7 +28,7 @@ namespace nl {
 
                 virtual ~FaceTraining() { }
 
-                static void read_csv(const string &csv_filename, vector<Mat> &images, vector<int> &labels,
+                static vector<string> read_csv(const string &csv_filename, vector<Mat> &images, vector<int> &labels,
                                      char separator = ';');
 
                 FaceRecognition &get_face_recognition();
@@ -42,7 +42,7 @@ namespace nl {
                  * Transforms the original_images into a specific size target_width and target_height
                  * and detects faces with a min_face_width and min_face_height
                  */
-                void detect_face_and_normalize_input(int target_width, int target_height, int min_face_width, int min_face_height);
+                bool detect_face_and_normalize_input(int target_width, int target_height, int min_face_width, int min_face_height);
 
                 /**
                  * Trains the (image, label) pairs given in the CSV
@@ -68,6 +68,7 @@ namespace nl {
                 vector<Mat> normalized_images;
                 vector<int> normalized_labels;
                 FaceRecognition face_recognition;
+                vector<string> paths;
             };
         }
     }
